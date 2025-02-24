@@ -42,16 +42,16 @@ def handle(data):
         try:
             data = json.loads(data)
         except json.JSONDecodeError:
-            return json.dumps({"error": "Неверный формат данных. Ожидается JSON-строка."})
+            return json.dumps({"error": "Неверный формат данных. Ожидается JSON-строка."}, ensure_ascii=False)
     
     # Проверяем, что data является словарем
     if not isinstance(data, dict):
-        return json.dumps({"error": "Неверный формат данных. Ожидается словарь или JSON-строка."})
+        return json.dumps({"error": "Неверный формат данных. Ожидается словарь или JSON-строка."}, ensure_ascii=False)
     
     # Проверяем, что передан URL
     url = data.get('url')
     if not url:
-        return json.dumps({"error": "URL не предоставлен"})
+        return json.dumps({"error": "URL не предоставлен"}, ensure_ascii=False)
     
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
@@ -63,9 +63,9 @@ def handle(data):
         nis_names, nis_values = parse_page(response.text)
         if nis_names and nis_values:
             results = extract_data(nis_names, nis_values)
-            # Возвращаем результаты в формате JSON
-            return json.dumps(results)
+            # Возвращаем результаты в формате JSON с поддержкой кириллицы
+            return json.dumps(results, ensure_ascii=False)
         else:
-            return json.dumps({"error": "Элементы с классами nisName или nisVal не найдены."})
+            return json.dumps({"error": "Элементы с классами nisName или nisVal не найдены."}, ensure_ascii=False)
     else:
-        return json.dumps({"error": f"Ошибка при загрузке страницы: {response.status_code}"})
+        return json.dumps({"error": f"Ошибка при загрузке страницы: {response.status_code}"}, ensure_ascii=False)
