@@ -37,6 +37,13 @@ def handle(data):
     :param data: Словарь с параметрами, переданными в настройках блока.
     :return: JSON-строка с результатами.
     """
+    # Если data передается как строка, преобразуем её в словарь
+    if isinstance(data, str):
+        try:
+            data = json.loads(data)
+        except json.JSONDecodeError:
+            return json.dumps({"error": "Неверный формат данных. Ожидается JSON-строка."})
+    
     # Проверяем, что передан URL
     url = data.get('url')
     if not url:
