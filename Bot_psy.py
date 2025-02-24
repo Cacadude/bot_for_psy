@@ -58,3 +58,8 @@ def handle(data):
             return json.dumps({"error": "Элементы с классами nisName или nisVal не найдены."})
     else:
         return json.dumps({"error": f"Ошибка при загрузке страницы: {response.status_code}"})
+
+# Пример использования:
+# data = {"url": "https://psytests.org/result?v=ipiOgMb4sotfh&b=51Bv5zdYvnari9"}
+# result = handle(data)
+# print(result)
