@@ -1,3 +1,4 @@
+import json
 import requests
 from bs4 import BeautifulSoup
 
@@ -30,26 +31,30 @@ def extract_data(nis_names, nis_values):
         results[name_text] = value_text
     return results
 
-def main(url):
-    """Основная функция для выполнения всех шагов."""
+def handle(data):
+    """
+    Основная функция, которая принимает хеш параметров и возвращает JSON.
+    :param data: Словарь с параметрами, переданными в настройках блока.
+    :return: JSON-строка с результатами.
+    """
+    # Проверяем, что передан URL
+    url = data.get('url')
+    if not url:
+        return json.dumps({"error": "URL не предоставлен"})
+    
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
     }
     
+    # Загружаем страницу
     response = fetch_page(url, headers)
     if response.status_code == 200:
         nis_names, nis_values = parse_page(response.text)
         if nis_names and nis_values:
             results = extract_data(nis_names, nis_values)
-            return results
-    return None
-
-url = "https://psytests.org/result?v=ipiOgMb4sotfh&b=51Bv5zdYvnari9"
-results = main(url)
-
-if results:
-    print("Данные по результатам теста:")
-    for name, value in results.items():
-        print(f"{name}: {value}")
-else:
-    print("Элементы с классами nisName или nisVal не найдены.")
+            # Возвращаем результаты в формате JSON
+            return json.dumps(results)
+        else:
+            return json.dumps({"error": "Элементы с классами nisName или nisVal не найдены."})
+    else:
+        return json.dumps({"error": f"Ошибка при загрузке страницы: {response.status_code}"})
