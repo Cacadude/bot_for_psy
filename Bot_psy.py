@@ -33,8 +33,8 @@ def extract_data(nis_names, nis_values):
 
 def handle(data):
     """
-    Основная функция, которая принимает хеш параметров и возвращает JSON.
-    :param data: Словарь с параметрами, переданными в настройках блока.
+    Основная функция, которая принимает данные и возвращает JSON.
+    :param data: Данные (строка или словарь), переданные в настройках блока.
     :return: JSON-строка с результатами.
     """
     # Если data передается как строка, преобразуем её в словарь
@@ -43,6 +43,10 @@ def handle(data):
             data = json.loads(data)
         except json.JSONDecodeError:
             return json.dumps({"error": "Неверный формат данных. Ожидается JSON-строка."})
+    
+    # Проверяем, что data является словарем
+    if not isinstance(data, dict):
+        return json.dumps({"error": "Неверный формат данных. Ожидается словарь или JSON-строка."})
     
     # Проверяем, что передан URL
     url = data.get('url')
@@ -65,8 +69,3 @@ def handle(data):
             return json.dumps({"error": "Элементы с классами nisName или nisVal не найдены."})
     else:
         return json.dumps({"error": f"Ошибка при загрузке страницы: {response.status_code}"})
-
-# Пример использования:
-# data = {"url": "https://psytests.org/result?v=ipiOgMb4sotfh&b=51Bv5zdYvnari9"}
-# result = handle(data)
-# print(result)
