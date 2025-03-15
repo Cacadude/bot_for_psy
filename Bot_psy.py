@@ -13,7 +13,7 @@ def parse_page(html):
     soup = BeautifulSoup(html, 'html.parser')
     
     # Извлекаем названия и значения
-    nis_names = soup.find_all(class_='nisName')
+    nis_names = soup.find_all(class_=['nisName', 'nisTitle'])
     nis_values = soup.find_all(class_='nisVal')
     
     # Проверяем, что элементы найдены
@@ -34,7 +34,7 @@ def extract_data(nis_names, nis_values):
 def handle(data):
     """
     Основная функция, которая принимает данные и возвращает JSON.
-    :param data: Данные (строка или словарь), переданные в настройках блока.
+    :param data: Данные, переданные в настройках блока.
     :return: JSON-строка с результатами.
     """
     # Если data передается как строка, преобразуем её в словарь
