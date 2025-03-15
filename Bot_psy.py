@@ -13,8 +13,12 @@ def parse_page(html):
     soup = BeautifulSoup(html, 'html.parser')
     
     # Извлекаем названия и значения
-    nis_names = soup.find_all(class_=['nisName', 'nisTitle'])
-    nis_values = soup.find_all(class_='nisVal')
+    if 'result?v=ipi' in url:
+        nis_names = soup.find_all(class_=['nisName', 'nisTitle'])
+        nis_values = soup.find_all(class_='nisVal')
+    else:
+        nis_names = soup.find_all(class_='nisName')
+        nis_values = soup.find_all(class_='nisVal')
     
     # Проверяем, что элементы найдены
     if nis_names and nis_values:
