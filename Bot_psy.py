@@ -8,7 +8,7 @@ def fetch_page(url, headers):
     response.encoding = 'windows-1251'  # Указываем правильную кодировку
     return response
 
-def parse_page(html):
+def parse_page(html, url):  # Добавлен параметр url
     """Парсит HTML-страницу и извлекает данные."""
     soup = BeautifulSoup(html, 'html.parser')
     
@@ -64,10 +64,10 @@ def handle(data):
     # Загружаем страницу
     response = fetch_page(url, headers)
     if response.status_code == 200:
-        nis_names, nis_values = parse_page(response.text)
+        # Передаем url в parse_page
+        nis_names, nis_values = parse_page(response.text, url)  # Добавлен url
         if nis_names and nis_values:
             results = extract_data(nis_names, nis_values)
-            # Возвращаем результаты в формате JSON с поддержкой кириллицы
             return json.dumps(results, ensure_ascii=False)
         else:
             return json.dumps({"error": "Элементы с классами nisName или nisVal не найдены."}, ensure_ascii=False)
