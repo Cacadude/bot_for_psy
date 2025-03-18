@@ -51,7 +51,7 @@ def handle(data):
         
         if response.status_code == 200:
             nis_names, nis_values = parse_page(response.text, data['url'])
-            return json.dumps(extract_data(nis_names, nis_values), ensure_ascii=False) if nis_names else json.dumps({"error": "Elements not found"}, ensure_ascii=False)
+            return json.dumps(extract_data(nis_names, nis_values), ensure_ascii=False) if nis_names else json.dumps({"error": "Elements not found", "user":user_agent}, ensure_ascii=False)
         
         return json.dumps({"error": f"HTTP Error {response.status_code}"}, ensure_ascii=False)
     
