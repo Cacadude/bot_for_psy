@@ -2,40 +2,39 @@ import json
 import requests
 from bs4 import BeautifulSoup
 
-def get_page(url):
-    headers = {"User-Agent": "Mozilla/5.0"}
-    response = requests.get(url, headers=headers, verify=False)
+def get_test_results(url):
+    # Загружаем страницу
+    response = requests.get(url, verify=False, headers={
+        "User-Agent": "Mozilla/5.0",
+        "Accept-Language": "ru-RU,ru;q=0.9"
+    })
     response.encoding = 'windows-1251'
-    return response.text
-
-def parse_results(html):
-    soup = BeautifulSoup(html, 'html.parser')
-    results = []
     
-    # Для всех типов ссылок собираем три класса
-    items = soup.find_all(class_=['nisTitle', 'nisName', 'nisVal'])
+    # Парсим HTML
+    soup = BeautifulSoup(response.text, 'html.parser')
     
-    # Собираем пары название-значение
-    for i in range(0, len(items)-1, 2):
-        name = items[i].get_text(strip=True)
-        value = items[i+1].get_text(strip=True) if i+1 < len(items) else 'N/A'
-        results.append(f"{name}: {value}")
+    # Собираем все элементы результатов
+    elements = soup.find_all(class_=['nisTitle', 'nisName', 'nisVal'])
     
-    return results
+    # Формируем пары "название: значение"
+    results = {}
+    for i in range(0, len(elements), 2):
+        if i+1 < len(elements):
+            name = elements[i].get_text(strip=True)
+            value = elements[i+1].get_text(strip=True)
+            results[name] = value
+    
+    return json.dumps(results, ensure_ascii=False)
 
 def handle(data):
     try:
         # Получаем URL из входных данных
-        url = json.loads(data)['url'] if isinstance(data, str) else data['url']
+        if isinstance(data, str):
+            data = json.loads(data)
+        url = data['url']
         
-        # Получаем HTML страницы
-        html = get_page(url)
+        # Получаем и возвращаем результаты
+        return get_test_results(url)
         
-        # Парсим результаты
-        results = parse_results(html)
-        
-        # Возвращаем в нужном формате
-        return json.dumps(results, ensure_ascii=False)
-    
     except Exception as e:
         return json.dumps({"error": str(e)}, ensure_ascii=False)
