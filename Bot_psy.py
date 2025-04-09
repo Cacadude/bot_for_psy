@@ -12,8 +12,29 @@ def parse_page(html):
     results = []
     
     # Собираем все элементы в порядке их появления
-    for element in soup.find_all(class_=['nisTitle', 'nisName', 'nisVal']):
-        results.append(element.get_text(strip=True))
+    elements = soup.find_all(class_=['nisTitle', 'nisName', 'nisVal'])
+    
+    # Формируем пары название-значение
+    i = 0
+    while i < len(elements):
+        current = elements[i]
+        
+        # Если текущий элемент - название (Title или Name)
+        if 'nisTitle' in current['class'] or 'nisName' in current['class']:
+            name = current.get_text(strip=True)
+            
+            # Проверяем следующий элемент на значение
+            if i+1 < len(elements) and 'nisVal' in elements[i+1]['class']:
+                value = elements[i+1].get_text(strip=True)
+                results.append(f"{name}: {value}")
+                i += 2  # Пропускаем уже обработанное значение
+            else:
+                results.append(f"{name}: -")  # Если значения нет
+                i += 1
+        # Если текущий элемент - значение без названия
+        elif 'nisVal' in current['class']:
+            results.append(f"-: {current.get_text(strip=True)}")
+            i += 1
     
     return results
 
