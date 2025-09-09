@@ -1,0 +1,65 @@
+import json
+import requests
+from bs4 import BeautifulSoup
+
+def handle(data):
+    try:
+        # 1. Получаем URL
+        if isinstance(data, str):
+            data = json.loads(data)
+        url = data.get('url')
+        if not url:
+            return json.dumps({"error": "URL не указан"}, ensure_ascii=False)
+
+        # 2. Загружаем страницу
+        headers = {
+            "User-Agent": "Mozilla/5.0",
+            "Accept-Language": "ru-RU,ru;q=0.9"
+        }
+        response = requests.get(url, headers=headers, verify=False)
+        response.encoding = 'windows-1251'
+        
+        if response.status_code != 200:
+            return json.dumps({"error": f"Ошибка загрузки: {response.status_code}"}, 
+                            ensure_ascii=False)
+
+        # 3. Парсим результаты с сохранением порядка
+        soup = BeautifulSoup(response.text, 'html.parser')
+        results = {}
+        
+        # Находим все элементы с нужными классами в порядке их появления
+        all_elements = soup.find_all(class_=['nisTitle', 'nisName', 'nisVal'])
+        
+        current_indicator = None
+        indicators_found = []
+        
+        for element in all_elements:
+            classes = element.get('class', [])
+            
+            if 'nisTitle' in classes or 'nisName' in classes:
+                # Это показатель - сохраняем его текст
+                current_indicator = element.get_text(strip=True)
+                indicators_found.append(current_indicator)
+            
+            elif 'nisVal' in classes and current_indicator:
+                # Это значение - связываем с последним показателем
+                value = element.get_text(strip=True)
+                results[current_indicator] = value
+                current_indicator = None  # Сбрасываем для следующей пары
+        
+        # Альтернативный подход: находим все контейнеры с показателями
+        if not results:
+            # Ищем все элементы-показатели и их следующие значения
+            indicators = soup.find_all(class_=['nisTitle', 'nisName'])
+            
+            for indicator in indicators:
+                indicator_text = indicator.get_text(strip=True)
+                # Ищем следующее значение nisVal после этого показателя
+                next_val = indicator.find_next(class_='nisVal')
+                if next_val:
+                    results[indicator_text] = next_val.get_text(strip=True)
+        
+        return json.dumps(results, ensure_ascii=False) if results else json.dumps({"error": "Данные не найдены"}, ensure_ascii=False)
+
+    except Exception as e:
+        return json.dumps({"error": f"Ошибка: {str(e)}"}, ensure_ascii=False)
